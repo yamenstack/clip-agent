@@ -118,7 +118,7 @@ def cut(src, c, out, fade=True):
 def upload_to_hub(base, token, path, title, description):
     base = base.rstrip("/")
     body = json.dumps({"filename": os.path.basename(path), "title": title, "description": description}).encode()
-        req = urllib.request.Request(f"{base}/t/{token}/new", data=body, method="POST", headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0 clip-agent"})
+    req = urllib.request.Request(f"{base}/t/{token}/new", data=body, method="POST", headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0 clip-agent"})
     vid = json.loads(urllib.request.urlopen(req, timeout=90).read())["video_id"]
     with open(path, "rb") as f:
         data = f.read()
