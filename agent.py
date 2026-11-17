@@ -117,13 +117,19 @@ def cut(src, c, out, fade=True):
 # ---------------------------------------------------------------- رفع إلى Rofilm Hub
 def upload_to_hub(base, token, path, title, description):
     base = base.rstrip("/")
+    H = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) ClipAgent/1.0", "Accept": "application/json"}
+    def call(req, t):
+        try:
+            return urllib.request.urlopen(req, timeout=t).read()
+        except urllib.error.HTTPError as e:
+            raise RuntimeError(f"HTTP {e.code} من {req.full_url.split('/t/')[0]}: {e.read()[:200]!r}")
     body = json.dumps({"filename": os.path.basename(path), "title": title, "description": description}).encode()
-    req = urllib.request.Request(f"{base}/t/{token}/new", data=body, method="POST", headers={"Content-Type": "application/json", "User-Agent": "Mozilla/5.0 clip-agent"})
-    vid = json.loads(urllib.request.urlopen(req, timeout=90).read())["video_id"]
+    req = urllib.request.Request(f"{base}/t/{token}/new", data=body, method="POST", headers={**H, "Content-Type": "application/json"})
+    vid = json.loads(call(req, 90))["video_id"]
     with open(path, "rb") as f:
         data = f.read()
-    up = urllib.request.Request(f"{base}/t/{token}/upload/{vid}", data=data, method="PUT", headers={"Content-Type": "video/mp4", "User-Agent": "Mozilla/5.0 clip-agent"})
-    urllib.request.urlopen(up, timeout=600).read()
+    up = urllib.request.Request(f"{base}/t/{token}/upload/{vid}", data=data, method="PUT", headers={**H, "Content-Type": "video/mp4"})
+    call(up, 600)
     return vid
 
 # ---------------------------------------------------------------- الرئيسي
