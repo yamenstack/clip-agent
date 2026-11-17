@@ -1,0 +1,44 @@
+name: Watch stream
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "رابط البث المباشر"
+        required: true
+      name:
+        description: "اسم الستريمر"
+        required: false
+        default: ""
+      hours:
+        description: "كم ساعة يراقب (الحد 5.5)"
+        required: false
+        default: "4"
+      threshold:
+        description: "الحساسية: 2.5 حساس، 3.2 عادي، 4.5 أسطوري فقط"
+        required: false
+        default: "3.2"
+      max_clips:
+        description: "أقصى عدد لقطات"
+        required: false
+        default: "8"
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 345
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: |
+          sudo apt-get update -y && sudo apt-get install -y ffmpeg
+          pip install -r requirements.txt
+      - name: Watch
+        env:
+          HUB_BASE: ${{ secrets.HUB_BASE }}
+          HUB_TOKEN: ${{ secrets.HUB_TOKEN }}
+        run: |
+          python watch.py --url "${{ github.event.inputs.url }}" --name "${{ github.event.inputs.name }}" \
+            --hours "${{ github.event.inputs.hours }}" --threshold "${{ github.event.inputs.threshold }}" \
+            --max-clips "${{ github.event.inputs.max_clips }}"
